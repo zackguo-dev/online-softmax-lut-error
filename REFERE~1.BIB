@@ -1,0 +1,88 @@
+% =====================================================================
+% References for: Error behaviour of LUT-based exponentials in online softmax
+%
+% NOTE ON VERIFICATION
+% The first block (foundational) is well established; details are reliable.
+% The second block (recent accelerators) was located via web search; the
+% arXiv IDs/years are given as found and SHOULD BE VERIFIED against the
+% arXiv listing before you rely on them in a formal write-up.
+% =====================================================================
+
+% ---- Foundational (reliable) ----------------------------------------
+
+@article{milakov2018online,
+  title   = {Online normalizer calculation for softmax},
+  author  = {Milakov, Maxim and Gimelshein, Natalia},
+  journal = {arXiv preprint arXiv:1805.02867},
+  year    = {2018},
+  note    = {The online-softmax recurrence characterised in this repo.}
+}
+
+@inproceedings{dao2022flashattention,
+  title     = {{FlashAttention}: Fast and Memory-Efficient Exact Attention with {IO}-Awareness},
+  author    = {Dao, Tri and Fu, Daniel Y. and Ermon, Stefano and Rudra, Atri and R{\'e}, Christopher},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2022},
+  note      = {arXiv:2205.14135}
+}
+
+@article{dao2023flashattention2,
+  title   = {{FlashAttention-2}: Faster Attention with Better Parallelism and Work Partitioning},
+  author  = {Dao, Tri},
+  journal = {arXiv preprint arXiv:2307.08691},
+  year    = {2023}
+}
+
+@article{schraudolph1999fast,
+  title   = {A fast, compact approximation of the exponential function},
+  author  = {Schraudolph, Nicol N.},
+  journal = {Neural Computation},
+  volume  = {11},
+  number  = {4},
+  pages   = {853--862},
+  year    = {1999},
+  note    = {Exponent-field bit trick for exp.}
+}
+
+@book{muller2016elementary,
+  title     = {Elementary Functions: Algorithms and Implementation},
+  author    = {Muller, Jean-Michel},
+  edition   = {3rd},
+  publisher = {Birkh{\"a}user},
+  year      = {2016},
+  note      = {Range reduction, table + interpolation, minimax approximation.}
+}
+
+% ---- Recent accelerators (VERIFY IDs before citing) -----------------
+
+@article{ita2023,
+  title   = {{ITA}: An Energy-Efficient Attention and Softmax Accelerator for Quantized Transformers},
+  author  = {Islamoglu, Gamze and others},
+  journal = {arXiv preprint arXiv:2307.03493},
+  year    = {2023},
+  note    = {Source of the softmax = 3.3\% area figure. VERIFY.}
+}
+
+@article{flashd2025,
+  title   = {{FLASH-D}: FlashAttention with Hidden Softmax Division},
+  author  = {(verify authors)},
+  journal = {arXiv preprint arXiv:2505.14201},
+  year    = {2025},
+  note    = {VERIFY ID/year.}
+}
+
+@article{intflashattention2024,
+  title   = {{INT-FlashAttention}: Enabling Flash Attention for {INT8} Quantization},
+  author  = {(verify authors)},
+  journal = {arXiv preprint arXiv:2409.16997},
+  year    = {2024},
+  note    = {VERIFY ID/year.}
+}
+
+@article{sole2025,
+  title   = {{SOLE}: Hardware-Software Co-design of Softmax and LayerNorm for Efficient Transformer Inference},
+  author  = {(verify authors)},
+  journal = {arXiv preprint arXiv:2510.17189},
+  year    = {2025},
+  note    = {VERIFY ID/year.}
+}
