@@ -76,7 +76,7 @@ accumulator `K` times?**
 
 Two implementations share the *same* approximate `exp`:
 
-| | passes | rescaling | isolates |
+| method | passes | rescaling | isolates |
 |---|---|---|---|
 | `denom_three_pass` | 3 | none | approximation error only |
 | `denom_online` | 1 | yes | approximation + accumulation |
@@ -106,11 +106,11 @@ does not occur in practice.
 
 ### 3.2 Accumulation is linear in `K` but heavily attenuated
 
-The interpolation error is systematically positive (`2^f` is convex; a chord lies
-above it — 100 % of samples positive), so accumulation *can* happen. On the
-adversarial `ascending` input, `N = 16`:
+The interpolation error is systematically positive (`2^f` is convex, so a linear
+interpolation chord lies strictly above it, making 100 % of errors positive), so
+accumulation *can* happen. On the adversarial `ascending` input, `N = 16`:
 
-| | value |
+| quantity | value |
 |---|---|
 | error per rescale | 4.79e-07 |
 | single-shot approx error `ε` | 1.31e-04 |
@@ -145,8 +145,8 @@ observation. The empirical content is that the LUT error's dominant component *i
 approximately such a constant factor.
 
 ```
-systematic +1% :  [2.02, 1.01, 1.01] -> [0.5000, 0.2500, 0.2500]   exact
-scattered  +-1% :  [2.02, 0.99, 1.01] -> [0.5025, 0.2463, 0.2512]   wrong
+systematic (+1%):  [2.02, 1.01, 1.01] -> [0.5000, 0.2500, 0.2500]   exact
+scattered  (±1%):  [2.02, 0.99, 1.01] -> [0.5025, 0.2463, 0.2512]   wrong
 ```
 
 > **Design implication.** A softmax exp unit should minimise the *ripple* of the
@@ -155,9 +155,9 @@ scattered  +-1% :  [2.02, 0.99, 1.01] -> [0.5025, 0.2463, 0.2512]   wrong
 
 ### 3.4 Uniform spacing is already optimal for `2^f`
 
-Linear-interpolation relative error scales as `(h²/8)·f''/f`. For `f = 2^x`,
-`f''/f = (ln 2)² = 0.480453`, constant (measured min = max over [0,1]). So uniform
-spacing already equalises relative error. Curvature-adaptive spacing: measured gain
+Linear-interpolation relative error scales as `(h²/8)·g''/g`, where `g` is the
+function being approximated. For `g(t) = 2^t`, `g''/g = (ln 2)² = 0.480453`, constant
+(measured min = max over [0,1]). So uniform spacing already equalises relative error. Curvature-adaptive spacing: measured gain
 0.97–1.09× (none) at 2× storage and a non-bit-sliceable address. This also refutes
 "inputs cluster near zero, so make the table denser there" — range reduction maps
 every input onto `f ∈ [0,1)` roughly uniformly, so the input distribution never
@@ -286,7 +286,7 @@ Requires NumPy and Matplotlib only.
 This note is deliberately narrow. It is **not** a claim of large area savings: in
 published accelerators the softmax/exp block is a small fraction of area (e.g. ITA
 reports softmax ≈ 3.3 %, with the MAC/PE array dominating), so shrinking the exp unit
-does not move chip-level numbers much. The contribution is the *error characterisation*
+does not significantly change chip-level area or power. The contribution is the *error characterisation*
 and the resulting design guidance, not a faster chip.
 
 Adjacent work is extensive: online softmax (Milakov & Gimelshein, 2018), FlashAttention
