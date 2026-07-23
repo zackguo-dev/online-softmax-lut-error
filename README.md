@@ -63,7 +63,8 @@ construction is:
 1. **Range reduction.** `exp(x) = 2^(x·log2e) = 2^i · 2^f` with `i = floor(y)`,
    `f = y - i`. The `2^i` factor is an exponent-field addition and is *exact*. The
    `log2e` factor folds into the preceding QK scaling, so the unit only ever computes
-   `2^f` for `f in [0,1)`.
+   `2^f` for `f in [0,1)`. A softmax temperature `T` folds into this same constant as
+   `log2e / T`, so temperature scaling costs no extra hardware.
 2. **Table lookup + interpolation** for `2^f`: high bits index the table, low bits are
    the interpolation weight. No division.
 
