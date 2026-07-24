@@ -13,24 +13,51 @@ prior art are welcome — see [Scope and prior art](#9-scope-and-prior-art).
 
 ---
 
+## Correction (2026-07-24)
+
+A prior-art review (`docs/prior-art.md`, in the adjacent `HW-in-the-loop-QAT` project)
+found that two of this repo's original novelty claims were already established, one was
+a classical result, and one still has no direct prior reference. **The code and all
+numerical results are unchanged — only the novelty claims are corrected.** This is kept
+as a visible correction rather than a silent edit.
+
+- **② (a constant multiplicative bias cancels in the softmax division) was already
+  known** — it is the shift-invariance of softmax, analysed by Blanchard, Higham &
+  Higham (arXiv:1909.03469). Used here as a known property, not a contribution.
+- **③ (the accumulator width, not the exp table, sets the precision floor) was already
+  published, with task accuracy** — by SoftmAP (arXiv:2411.17847) and, in the online
+  setting with public code, SoftEx (arXiv:2412.06321). Reproduced here independently,
+  not first.
+- **①a (rescale count ~ `ln n`) is a classical result** (record statistics / harmonic
+  numbers), not a finding.
+- **①b (in fixed point the rescale error self-attenuates, so a naive `K·ε` bound is far
+  too pessimistic) still has no direct prior reference found.** The nearest 2026 works
+  take the opposite stance — see §9.
+
+---
+
 ## TL;DR
 
-1. **Rescaling is rare.** The number of rescale events `K` grows as `ln(n_blocks)`,
-   not linearly. For 1024 blocks, `K ≈ 7`.
-2. **Error accumulation through rescaling is self-attenuating.** It is linear in `K`,
-   but the per-rescale contribution is ~270× smaller than the single-shot
-   approximation error `ε`. A naive `K·ε` bound is far too pessimistic.
-3. **Systematic bias cancels in the softmax division.** Minimising the *magnitude*
-   of the approximation error — the textbook minimax objective — is largely wasted
-   effort here. What matters is the *ripple* (spread) of the relative error, because
-   any constant multiplicative bias divides out exactly.
-4. **Uniform table spacing is optimal for `2^f`**: `(2^f)''/(2^f) = (ln 2)²` is
-   constant, so the relative interpolation error is already equalised across the whole
-   interval. Curvature-adaptive spacing gains nothing (measured 0.97–1.09×) at 2× the
-   storage.
-5. **In a fixed-point model, both (2) and (3) survive, and the accumulator width — not
-   the table — sets the precision floor.** Spend bits on the accumulator; keep the
-   table small.
+**Central claim — no direct prior reference found (see §9):**
+
+1. **In a fixed-point model, the rescale error of online softmax self-attenuates.** It
+   is linear in the rescale count `K`, but the per-rescale contribution is ~270× smaller
+   than the single-shot approximation error `ε`, so a naive `K·ε` bound is far too
+   pessimistic. The nearest 2026 work assumes the opposite (ELSA proves a worst-case
+   bound; BAPS mitigates accumulation) — see §9.
+
+**Known results, used or independently reproduced here — not contributions (see the Correction above):**
+
+2. A constant multiplicative bias cancels in the softmax division — the shift-invariance
+   of softmax (Blanchard, Higham & Higham). So what matters for an exp unit is the
+   *ripple* of the relative error, not its magnitude; a minimax offset is wasted effort.
+3. In a fixed-point model, the accumulator width — not the exp table — sets the
+   precision floor. Already shown with task accuracy by SoftmAP and SoftEx; reproduced
+   here on a LUT-based unit.
+4. The rescale count `K` grows as `ln(n_blocks)` (classical record statistics), so
+   rescaling is rare (`K ≈ 7` for 1024 blocks).
+5. Uniform table spacing is optimal for `2^f` (`(2^f)''/(2^f) = (ln 2)²` is constant);
+   curvature-adaptive spacing gains nothing (0.97–1.09×) at 2× the storage.
 
 ---
 
@@ -122,7 +149,7 @@ A rescale multiplies `l` by `exp(m_old − m_new) < 1`, shrinking the accumulate
 small. Even at length 262144 with every block triggering a rescale, a 16-point table
 keeps the denominator error below 0.2 %.
 
-### 3.3 Systematic bias cancels in the division (main finding)
+### 3.3 Systematic bias cancels in the division (a known property, used here)
 
 A minimax offset (shifting entries so the error is balanced) is free in hardware and
 improves the **denominator** error 4–5×, but not the quantity that matters, the
@@ -141,9 +168,10 @@ Decomposing the relative error:
 | uniform + linear + offset | +3.909e-05 | 2.346e-04 |
 
 The ripple is identical; only the mean differs. A constant multiplicative factor `c`
-cancels exactly in `c·exp(xᵢ) / Σ c·exp(xⱼ)` — this part is an identity, not just an
-observation. The empirical content is that the LUT error's dominant component *is*
-approximately such a constant factor.
+cancels exactly in `c·exp(xᵢ) / Σ c·exp(xⱼ)`. This is the shift-invariance of softmax,
+analysed by Blanchard, Higham & Higham (arXiv:1909.03469) — a known property, used here,
+not a contribution. The only empirical content is that the LUT error's dominant component
+*is* approximately such a constant factor.
 
 ```
 systematic (+1%):  [2.02, 1.01, 1.01] -> [0.5000, 0.2500, 0.2500]   exact
@@ -205,6 +233,12 @@ Bit-budget sweep (N=16, one parameter reduced at a time):
 consistent with production FlashAttention accumulating in FP32. Guidance: keep the
 table small, spend the bit budget on the accumulator. `ACC ≈ 18, F ≈ 14, FB ≈ 8–10`
 reaches sub-0.1 % output error at N=16.
+
+This "accumulator dominates" result is **not new**: SoftmAP (arXiv:2411.17847) and
+SoftEx (arXiv:2412.06321, online, with public code) already showed it against task
+accuracy in 2024. What this repo adds is the independent reproduction on a LUT-based
+online-softmax unit, plus the §3.2 mechanism (rescale-error self-attenuation) that
+explains *why* the accumulator, and not the table, is the limiter.
 
 ---
 
@@ -287,20 +321,38 @@ Requires NumPy and Matplotlib only.
 This note is deliberately narrow. It is **not** a claim of large area savings: in
 published accelerators the softmax/exp block is a small fraction of area (e.g. ITA
 reports softmax ≈ 3.3 %, with the MAC/PE array dominating), so shrinking the exp unit
-does not significantly change chip-level area or power. The contribution is the *error characterisation*
-and the resulting design guidance, not a faster chip.
+does not significantly change chip-level area or power. The contribution is the *error
+characterisation*, not a faster chip.
 
-Adjacent work is extensive: online softmax (Milakov & Gimelshein, 2018), FlashAttention
-(Dao et al., 2022; Dao, 2023), the exponent-field bit trick (Schraudolph, 1999),
-range reduction / minimax approximation (Muller, 2016), and recent softmax/attention
-accelerators (ITA; FLASH-D; INT-FlashAttention; SOLE). Small LUT + range reduction +
-piecewise-linear interpolation is already standard practice; the novel part here is
-the analysis of error *propagation through the online-softmax rescale recurrence* and
-the *bias-cancellation* property of §3.3, for which I did not find a direct prior
-reference. Corrections welcome.
+Status of each claim after the 2026-07-24 prior-art review:
 
-See `references.bib`. **Note:** arXiv IDs for the recent-accelerator references were
-gathered from web search and should be verified before formal citation.
+| Claim | Status | Reference |
+|---|---|---|
+| ①a rescale count ~ `ln n` | known (classical) | record statistics / harmonic numbers |
+| **①b fixed-point rescale error self-attenuates; `K·ε` over-pessimistic** | **no direct prior reference found** | positioned against ELSA / BAPS below |
+| ② constant bias cancels in the division | known | Blanchard, Higham & Higham, arXiv:1909.03469 (softmax shift-invariance) |
+| ③ accumulator width, not the table, sets the precision floor | already published, with task accuracy | SoftmAP arXiv:2411.17847; SoftEx arXiv:2412.06321 (online, public code) |
+
+Positioning of ①b against the nearest 2026 work — note these are *not* the same claim:
+
+- **ELSA (arXiv:2604.23798)** recasts the online-softmax recurrence as a prefix scan and
+  proves an `O(u·log n)` FP32 **worst-case** relative-error bound. That is a worst-case
+  bound, not a statement that the error self-attenuates; ①b is a complementary empirical
+  observation about the typical (and even adversarial) fixed-point case, and does not
+  contradict ELSA's bound.
+- **BAPS (arXiv:2602.02071)**, §3.3 "Reduce Accumulated Error of Power-of-2 Computations",
+  treats multiplication-error accumulation in online softmax as a risk to be mitigated.
+  ①b takes the opposite empirical stance for the LUT + fixed-point-accumulator setting
+  studied here.
+
+Other adjacent work: online softmax (Milakov & Gimelshein, 2018), FlashAttention
+(Dao et al., 2022; Dao, 2023), the exponent-field bit trick (Schraudolph, 1999), range
+reduction / minimax approximation (Muller, 2016), integer softmax (I-BERT,
+arXiv:2101.01321), and recent softmax/attention accelerators (ITA; SOLE arXiv:2510.17189;
+IntAttention arXiv:2511.21513; "Taming the Exponential" arXiv:2604.02292). Small LUT +
+range reduction + piecewise-linear interpolation is standard practice. Corrections welcome.
+
+See `references.bib`.
 
 ## License
 

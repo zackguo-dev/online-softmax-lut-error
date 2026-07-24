@@ -2,10 +2,11 @@
 % References for: Error behaviour of LUT-based exponentials in online softmax
 %
 % NOTE ON VERIFICATION
-% The first block (foundational) is well established; details are reliable.
-% The second block (recent accelerators) was located via web search; the
-% arXiv IDs/years are given as found and SHOULD BE VERIFIED against the
-% arXiv listing before you rely on them in a formal write-up.
+% Foundational block: well established.
+% "Verified 2026-07-24" block: arXiv page and/or body read on 2026-07-24 to
+%   confirm title and the claim attributed to it (see per-entry notes).
+% "Recent accelerators (unverified)" block: located via web search only;
+%   VERIFY IDs/years before relying on them.
 % =====================================================================
 
 % ---- Foundational (reliable) ----------------------------------------
@@ -53,22 +54,96 @@
   note      = {Range reduction, table + interpolation, minimax approximation.}
 }
 
-% ---- Recent accelerators (VERIFY IDs before citing) -----------------
+% ---- Verified 2026-07-24 (title and attributed claim checked) -------
+
+@article{blanchard2021logsumexp,
+  title   = {Accurately computing the log-sum-exp and softmax functions},
+  author  = {Blanchard, Pierre and Higham, Desmond J. and Higham, Nicholas J.},
+  journal = {IMA Journal of Numerical Analysis},
+  year    = {2021},
+  note    = {arXiv:1909.03469. Softmax shift-invariance / rounding-error analysis = claim (2). Abstract verified 2026-07-24.}
+}
+
+@article{softmap2024,
+  title   = {{SoftmAP}: Software-Hardware Co-design for Integer-only Low-precision Softmax using In-Memory Compute},
+  author  = {(see arXiv abstract)},
+  journal = {arXiv preprint arXiv:2411.17847},
+  year    = {2024},
+  note    = {Input/accumulator precision vs task accuracy (N=16 saturation) = claim (3). Abstract verified 2026-07-24.}
+}
+
+@article{softex2024,
+  title   = {A Flexible Template for Edge Generative {AI} with High-Accuracy Accelerated Softmax \& {GELU}},
+  author  = {(see arXiv abstract)},
+  journal = {arXiv preprint arXiv:2412.06321},
+  year    = {2024},
+  note    = {SoftEx accelerator: online softmax, accumulator bits vs task accuracy, public code github.com/belanoa/softex = claim (3). Abstract verified 2026-07-24.}
+}
+
+@article{elsa2026,
+  title   = {{ELSA}: Exact Linear-Scan Attention for Fast and Memory-Light Vision Transformers},
+  author  = {(see arXiv abstract)},
+  journal = {arXiv preprint arXiv:2604.23798},
+  year    = {2026},
+  note    = {Prefix-scan online softmax; provable O(u log n) FP32 worst-case relative-error bound. Contrast for claim (1b). Body verified 2026-07-24.}
+}
+
+@article{baps2026,
+  title   = {{BAPS}: A Fine-Grained Low-Precision Scheme for Softmax in Attention via Block-Aware Precision reScaling},
+  author  = {Ye, Zisheng and He, Xiaoyu and Song, Maoyuan and others},
+  journal = {arXiv preprint arXiv:2602.02071},
+  year    = {2026},
+  note    = {Sec 3.3 treats online-softmax multiplication-error accumulation as a risk to mitigate = opposite premise to claim (1b). Body verified 2026-07-24.}
+}
+
+@article{ibert2021,
+  title   = {{I-BERT}: Integer-only {BERT} Quantization},
+  author  = {Kim, Sehoon and Gholami, Amir and Yao, Zhewei and Mahoney, Michael W. and Keutzer, Kurt},
+  journal = {International Conference on Machine Learning (ICML)},
+  year    = {2021},
+  note    = {arXiv:2101.01321. Integer-only softmax with max-subtraction. Verified 2026-07-24.}
+}
+
+@article{sole2025,
+  title   = {{SOLE}: Hardware-Software Co-design of Softmax and LayerNorm for Efficient Transformer Inference},
+  author  = {Wang, Wenxun and Zhou, Shuchang and Sun, Wenyu and Sun, Peiqin and Liu, Yongpan},
+  journal = {arXiv preprint arXiv:2510.17189},
+  year    = {2025},
+  note    = {Verified 2026-07-24.}
+}
+
+@article{intattention2025,
+  title   = {{IntAttention}: A Fully Integer Attention Pipeline for Efficient Edge Inference},
+  author  = {(see arXiv abstract)},
+  journal = {arXiv preprint arXiv:2511.21513},
+  year    = {2025},
+  note    = {32-entry LUT exp. Title verified 2026-07-24.}
+}
+
+@article{taming2026,
+  title   = {Taming the Exponential: A Fast Softmax Surrogate for Integer-Native Edge Inference},
+  author  = {(see arXiv abstract)},
+  journal = {arXiv preprint arXiv:2604.02292},
+  year    = {2026},
+  note    = {HCCS clipped-linear int8 softmax surrogate (AMD AI Engine). Title verified 2026-07-24; the Sec III-B bias-cancellation quote from the prior-art notes was NOT located in the body.}
+}
 
 @article{ita2023,
   title   = {{ITA}: An Energy-Efficient Attention and Softmax Accelerator for Quantized Transformers},
   author  = {Islamoglu, Gamze and others},
   journal = {arXiv preprint arXiv:2307.03493},
   year    = {2023},
-  note    = {Source of the softmax = 3.3\% area figure. VERIFY.}
+  note    = {Source of the softmax = 3.3\% area figure (per prior-art notes).}
 }
+
+% ---- Recent accelerators (located via web search, IDs unverified) ---
 
 @article{flashd2025,
   title   = {{FLASH-D}: FlashAttention with Hidden Softmax Division},
   author  = {(verify authors)},
   journal = {arXiv preprint arXiv:2505.14201},
   year    = {2025},
-  note    = {VERIFY ID/year.}
+  note    = {Not cited in the corrected README. VERIFY ID/year before use.}
 }
 
 @article{intflashattention2024,
@@ -76,13 +151,5 @@
   author  = {(verify authors)},
   journal = {arXiv preprint arXiv:2409.16997},
   year    = {2024},
-  note    = {VERIFY ID/year.}
-}
-
-@article{sole2025,
-  title   = {{SOLE}: Hardware-Software Co-design of Softmax and LayerNorm for Efficient Transformer Inference},
-  author  = {(verify authors)},
-  journal = {arXiv preprint arXiv:2510.17189},
-  year    = {2025},
-  note    = {VERIFY ID/year.}
+  note    = {Not cited in the corrected README. VERIFY ID/year before use.}
 }
